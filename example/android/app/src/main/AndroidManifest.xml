@@ -1,18 +1,13 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mvpapps.uae_pass_example">
-    <queries>
-        <package android:name="ae.uaepass.mainapp" />
-        <package android:name="ae.uaepass.mainapp.qa" />
-        <package android:name="ae.uaepass.mainapp.stg" />
-    </queries>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="uae_pass_example"
+        android:label="test_uae_pass"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
+            android:taskAffinity=""
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
@@ -30,6 +25,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
+
             <intent-filter >
                 <action android:name="android.intent.action.VIEW" />
 
@@ -46,22 +42,8 @@
                     android:scheme="myappscheme" />
 
             </intent-filter>
-            <intent-filter >
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
 
 
-                <data
-                    android:host="success"
-                    android:scheme="uaepassdemoappDS" />
-
-                <data
-                    android:host="failure"
-                    android:scheme="uaepassdemoappDS" />
-
-            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
@@ -69,4 +51,23 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+    <!-- Required to query activities that can process text, see:
+         https://developer.android.com/training/package-visibility and
+         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
+
+         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+
+    <queries>
+        <package android:name="ae.uaepass.mainapp" />
+        <package android:name="ae.uaepass.mainapp.qa" />
+        <package android:name="ae.uaepass.mainapp.stg" />
+    </queries>
+
+
 </manifest>
