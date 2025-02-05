@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_uae_pass/uae_pass.dart';
+import 'package:flutter_uae_pass/flutter_uae_pass.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,13 +23,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-
-    _uaePass.setUpEnvironment(
-      clientId: "<clientId>",
-      clientSecret: "<clientSecret>",
-      urlScheme: "myappscheme",
-      redirectUri: "<redirectUri>",
-    );
+    _uaePass.setUpSandbox();
   }
 
   @override

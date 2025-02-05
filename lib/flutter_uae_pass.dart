@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'uae_pass.dart';
+import 'flutter_uae_pass.dart';
 export 'core/export.dart';
 export 'model/export.dart';
 

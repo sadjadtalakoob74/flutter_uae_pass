@@ -2,10 +2,10 @@
 
 Un-official UAE Pass Flutter plugin for Android and iOS.
 
-![Demo](https://github.com/MohamedAbd0/uae_pass/blob/main/screenshots/demo.gif?raw=true)
-
+![Demo](https://github.com/MohamedAbd0/flutter_uae_pass/blob/main/screenshots/demo.gif?raw=true)
 
 ## Getting Started
+
 - Add the plugin to your pubspec.yaml file
 
 ```yaml
@@ -21,7 +21,7 @@ flutter pub get
 - Import the package
 
 ```dart
-import 'package:flutter_uae_pass/uae_pass.dart';
+import 'package:flutter_uae_pass/flutter_uae_pass.dart';
 final _uaePassPlugin = UaePass();
 
 
@@ -51,8 +51,8 @@ final _uaePassPlugin = UaePass();
 - urn:uae:digitalid:profile:general
 - urn:uae:digitalid:profile
 
-
 # Main features
+
 - signIn()
 - getAccessToken(String authCode)
 - getProfile(String token)
@@ -71,19 +71,21 @@ final _uaePassPlugin = UaePass();
 ```
 
 # To get public profile data
+
 you can fetch this information from profile
--  idn
--  email
--  firstnameAR
--  firstnameEN
--  fullnameEN
--  gender
--  lastnameAR
--  lastnameEN
--  mobile
--  nationalityAR
--  nationalityEN
--  sub
+
+- idn
+- email
+- firstnameAR
+- firstnameEN
+- fullnameEN
+- gender
+- lastnameAR
+- lastnameEN
+- mobile
+- nationalityAR
+- nationalityEN
+- sub
 - userType
 - uuid
 
@@ -96,7 +98,7 @@ you can fetch this information from profile
 - Add the following to your Info.plist file
 
 ```xml
-		
+
 		<key>LSApplicationQueriesSchemes</key>
 		<array>
 			<string>uaepass</string>
@@ -169,10 +171,9 @@ you can fetch this information from profile
 ```
 
 ## References
+
 - [Documentation](https://docs.uaepass.ae/)
 - [Read Common issues](https://docs.uaepass.ae/faq/common-integration-issues)
 - [Staging Apps](https://docs.uaepass.ae/resources/staging-apps)
 
-
 Thanks for [Faisal](https://github.com/Faisalkc4u) for this repo [uae_pass_flutter](https://github.com/Faisalkc4u/uae_pass) i improve the code and create this package
-
