@@ -30,6 +30,7 @@ abstract class UaePassPlatform extends PlatformInterface {
     required String state,
     required String redirectUri,
     required String scope,
+    required String language,
   }) {
     throw UnimplementedError('setUp() has not been implemented.');
   }

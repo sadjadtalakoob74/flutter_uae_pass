@@ -30,7 +30,7 @@ extension WKWebViewConfiguration {
     public override init() {
         uploadSignDocumentResponse = nil
         environmentConfig = UAEPassConfig(clientID: "", clientSecret: "", env: .qa)
-        spConfig = SPConfig(redirectUriLogin: "", scope: "", state: "", successSchemeURL: "", failSchemeURL: "")
+        spConfig = SPConfig(redirectUriLogin: "", scope: "", state: "", successSchemeURL: "", failSchemeURL: "", language: "")
         webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration.shared)
         uaePassToken = ""
     }
