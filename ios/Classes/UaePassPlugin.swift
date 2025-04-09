@@ -72,6 +72,7 @@ public class UaePassPlugin: NSObject, FlutterPlugin {
         let state = arguments["state"] as! String
         let scope = arguments["scope"] as! String
         let scheme = arguments["scheme"] as! String
+        let language = arguments["language"] as! String
 
         UAEPASSRouter.shared.environmentConfig = UAEPassConfig(clientID: clientID, clientSecret: clientSecret, env: env)
 
@@ -80,7 +81,8 @@ public class UaePassPlugin: NSObject, FlutterPlugin {
                                                  state:state,  
                                                  successSchemeURL: scheme+"://",
                                                  failSchemeURL: scheme+"://",
-                                                 signingScope: "urn:safelayer:eidas:sign:process:document")
+                                                 signingScope: "urn:safelayer:eidas:sign:process:document",
+                                                 language: language)
       }
     case "access_token":
       if let arguments = call.arguments as? [String: Any]{

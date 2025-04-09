@@ -49,7 +49,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     private var failureHost: String? = null
     private var successHost: String? = null
     private var scope: String? = "urn:uae:digitalid:profile"
-
+    private var language: String? = "en"
 
     private val UAE_PASS_PACKAGE_ID = "ae.uaepass.mainapp"
     private val UAE_PASS_QA_PACKAGE_ID = "ae.uaepass.mainapp.qa"
@@ -106,6 +106,8 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             failureHost = call.argument<String?>("failureHost")
             successHost = call.argument<String?>("successHost")
             scope = call.argument<String?>("scope")
+            language = call.argument<String?>("language")
+
             if (redirect_url == null) {
                 redirect_url = "https://oauthtest.com/authorization/return"
             }
@@ -224,6 +226,11 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         } else {
             ACR_VALUES_WEB
         }
+        val LANGUAGE = if (language == "ar") {
+            Language.AR
+        } else {
+            Language.EN
+        }
         return UAEPassAccessTokenRequestModel(
             environment!!,
             client_id!!,
@@ -236,7 +243,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             RESPONSE_TYPE,
             ACR_VALUE,
             state!!,
-            Language.EN
+            LANGUAGE
         )
     }
 
@@ -245,6 +252,11 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             ACR_VALUES_MOBILE
         } else {
             ACR_VALUES_WEB
+        }
+        val LANGUAGE = if (language == "ar") {
+            Language.AR
+        } else {
+            Language.EN
         }
         return UAEPassProfileRequestModel(
             environment!!,
@@ -258,7 +270,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             RESPONSE_TYPE,
             ACR_VALUE,
             state!!,
-            Language.EN
+            LANGUAGE
         )
     }
 }

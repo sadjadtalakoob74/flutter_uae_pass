@@ -15,12 +15,15 @@ import UIKit
     var state: String
     var successSchemeURL: String
     var failSchemeURL: String
-    @objc public required init(redirectUriLogin: String,scope: String,state: String, successSchemeURL: String, failSchemeURL: String,signingScope: String? = nil) {
+    var language: String
+
+    @objc public required init(redirectUriLogin: String,scope: String,state: String, successSchemeURL: String, failSchemeURL: String,signingScope: String? = nil, language: String) {
         self.redirectUriLogin = redirectUriLogin
         self.loginScope = scope
         self.signScope = signingScope
         self.state = state
         self.successSchemeURL = successSchemeURL
         self.failSchemeURL = failSchemeURL
+        self.language = language
     }
 }

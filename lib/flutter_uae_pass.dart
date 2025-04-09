@@ -5,7 +5,7 @@ export 'core/export.dart';
 export 'model/export.dart';
 
 class UaePass {
-  Future<void> setUpSandbox() async {
+  Future<void> setUpSandbox({String language = "en"}) async {
     UaePassPlatform.instance.setUp(
       clientId: "sandbox_stage",
       clientSecret: "sandbox_stage",
@@ -14,6 +14,7 @@ class UaePass {
       state: "123123213",
       redirectUri: "https://oauthtest.com/authorization/return",
       scope: "urn:uae:digitalid:profile",
+      language: language,
     );
   }
 
@@ -25,6 +26,7 @@ class UaePass {
     bool isProduction = false,
     String redirectUri = "https://oauthtest.com/authorization/return",
     String scope = "urn:uae:digitalid:profile",
+    String language = "en",
   }) async {
     UaePassPlatform.instance.setUp(
       clientId: clientId,
@@ -34,6 +36,7 @@ class UaePass {
       state: state,
       redirectUri: redirectUri,
       scope: scope,
+      language: language,
     );
   }
 
