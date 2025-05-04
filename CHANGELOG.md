@@ -19,3 +19,7 @@
 ## 1.0.1
 
 - updated java version
+
+## 1.0.2
+
+- adding language support
