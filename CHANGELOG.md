@@ -23,3 +23,7 @@
 ## 1.0.2
 
 - adding language support
+
+## 1.0.3
+
+- resolve conflict with go_router custom schema integration
