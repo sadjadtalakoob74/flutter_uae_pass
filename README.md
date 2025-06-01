@@ -1,8 +1,16 @@
 # uae_pass
 
-Un-official UAE Pass Flutter plugin for Android and iOS.
+Un-official UAE Pass Flutter plugin for **iOS, Android, and Web**.
 
 ![Demo](https://github.com/MohamedAbd0/flutter_uae_pass/blob/main/screenshots/demo.gif?raw=true)
+
+## Platform Support
+
+| Platform | Supported | Implementation                   |
+| -------- | --------- | -------------------------------- |
+| iOS      | ✅        | WKWebView with full screen modal |
+| Android  | ✅        | Custom WebView Activity          |
+| Web      | ✅        | OAuth2 popup authentication      |
 
 ## Getting Started
 
@@ -169,6 +177,29 @@ you can fetch this information from profile
             </intent-filter>
 
 ```
+
+## Web Setup
+
+For web applications, no additional configuration is required! The plugin automatically uses a popup-based OAuth2 flow that works in all modern browsers.
+
+### Web-Specific Features:
+
+- **Popup Authentication**: Opens UAE Pass login in a secure popup window
+- **Automatic Redirect Handling**: Automatically detects and processes the authorization callback
+- **CORS Compliance**: Uses proper HTTP requests for token exchange and profile retrieval
+- **Session Management**: Handles cookies and localStorage for proper logout functionality
+
+### Browser Requirements:
+
+- Modern browsers with popup support (Chrome, Firefox, Safari, Edge)
+- JavaScript enabled
+- Cookies enabled for proper session management
+
+### Production Considerations:
+
+- Ensure your redirect URI is properly configured in the UAE Pass dashboard
+- For production, make sure your domain is whitelisted in UAE Pass configuration
+- Test popup blockers - inform users to allow popups for your domain if needed
 
 ## References
 

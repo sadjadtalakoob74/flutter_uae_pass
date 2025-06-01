@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'flutter_uae_pass.dart';
 export 'core/export.dart';
 export 'model/export.dart';
+export 'uae_pass_web.dart';
 
 class UaePass {
   Future<void> setUpSandbox({String language = "en"}) async {

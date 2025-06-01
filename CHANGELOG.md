@@ -35,3 +35,9 @@
 - Implemented consistent "UAE PASS" title across both platforms
 - Unified cancellation behavior with proper error messaging
 - Improved user experience with native back button support on both platforms
+
+## 1.0.5
+
+- **NEW: Added web platform support with OAuth2 popup authentication flow**
+- Web implementation supports all core features: signIn, getAccessToken, getProfile, signOut
+- Cross-platform compatibility across iOS, Android, and Web
