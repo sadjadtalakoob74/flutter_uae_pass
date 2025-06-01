@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:html' as html;
-import 'dart:js' as js;
 import 'dart:convert';
 
 import 'package:flutter/services.dart';

@@ -1,0 +1,23 @@
+# IDE and editor files
+.vscode/
+.idea/
+*.iml
+
+# FVM configuration
+.fvmrc
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Build and cache directories
+build/
+.dart_tool/
+
+# Example app specific files
+example/.fvmrc
+example/.vscode/
+example/build/
+
+# Screenshots system files
+screenshots/.DS_Store
