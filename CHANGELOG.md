@@ -30,4 +30,8 @@
 
 ## 1.0.4
 
-- fix IOS web view unable to navigate back
+- Enhanced iOS webview presentation with full screen modal and back navigation
+- Added custom Android webview activity for full screen authentication experience
+- Implemented consistent "UAE PASS" title across both platforms
+- Unified cancellation behavior with proper error messaging
+- Improved user experience with native back button support on both platforms
