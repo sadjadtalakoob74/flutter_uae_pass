@@ -6,8 +6,8 @@ Un-official UAE Pass Flutter plugin for **iOS, Android, and Web**.
 
 ## Platform Screenshots
 
-| Android | iOS | Web |
-|---------|-----|-----|
+| Android                                                                                                | iOS                                                                                            | Web                                                                                            |
+| ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | ![Android](https://github.com/MohamedAbd0/flutter_uae_pass/blob/main/screenshots/andorid.png?raw=true) | ![iOS](https://github.com/MohamedAbd0/flutter_uae_pass/blob/main/screenshots/ios.png?raw=true) | ![Web](https://github.com/MohamedAbd0/flutter_uae_pass/blob/main/screenshots/web.png?raw=true) |
 
 ## Platform Support
@@ -23,7 +23,7 @@ Un-official UAE Pass Flutter plugin for **iOS, Android, and Web**.
 - Add the plugin to your pubspec.yaml file
 
 ```yaml
-flutter_uae_pass: ^1.0.3
+flutter_uae_pass: ^1.0.5
 ```
 
 - Run flutter pub get
@@ -56,7 +56,7 @@ final _uaePassPlugin = UaePass();
       urlScheme: "myappscheme",
       redirectUri: "<redirectUri>",
       isProduction: true,
-      language = "en",
+      language : "en",
     );
 ```
 
