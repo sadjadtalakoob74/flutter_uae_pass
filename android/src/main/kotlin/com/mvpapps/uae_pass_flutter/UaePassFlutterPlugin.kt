@@ -35,7 +35,7 @@ import com.google.gson.Gson
 
 /** UaePassPlugin */
 class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
-    PluginRegistry.NewIntentListener {
+    PluginRegistry.NewIntentListener, PluginRegistry.ActivityResultListener {
 
     private lateinit var channel: MethodChannel
     private lateinit var requestModel: UAEPassAccessTokenRequestModel
@@ -69,6 +69,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         if (activity == null)
             activity = binding.activity
         binding.addOnNewIntentListener(this)
+        binding.addActivityResultListener(this)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -77,7 +78,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     override fun onReattachedToActivityForConfigChanges(@NonNull binding: ActivityPluginBinding) {
         activity = binding.activity
         binding.addOnNewIntentListener(this)
-
+        binding.addActivityResultListener(this)
     }
 
     override fun onDetachedFromActivity() {
@@ -127,17 +128,15 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             CookieManager.getInstance().removeAllCookies { }
             CookieManager.getInstance().flush()
         } else if (call.method == "sign_in") {
-            /** Login with UAE Pass and get the access Code. */
-            requestModel = getAuthenticationRequestModel(activity!!)
-            getAccessCode(activity!!, requestModel, object : UAEPassAccessCodeCallback {
-                override fun getAccessCode(code: String?, error: String?) {
-                    if (error != null) {
-                        result.error("ERROR", error, null);
-                    } else {
-                        result.success(code)
-                    }
-                }
-            })
+            /** Login with UAE Pass using custom full screen webview */
+            val authUrl = buildAuthUrl()
+            val intent = Intent(activity, UAEPassWebViewActivity::class.java).apply {
+                putExtra(UAEPassWebViewActivity.EXTRA_AUTH_URL, authUrl)
+                putExtra(UAEPassWebViewActivity.EXTRA_REDIRECT_URI, redirect_url)
+                putExtra(UAEPassWebViewActivity.EXTRA_SCHEME, scheme)
+            }
+
+            activity?.startActivityForResult(intent, 1001)
         } else if (call.method == "access_token") {
             requestModel = getAuthenticationRequestModel(activity!!)
 
@@ -272,5 +271,52 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             state!!,
             LANGUAGE
         )
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+        if (requestCode == 1001) {
+            when (resultCode) {
+                Activity.RESULT_OK -> {
+                    val code = data?.getStringExtra(UAEPassWebViewActivity.RESULT_CODE_SUCCESS)
+                    if (code != null) {
+                        result.success(code)
+                    } else {
+                        result.error("ERROR", "Unable to get access code", null)
+                    }
+                }
+                Activity.RESULT_CANCELED -> {
+                    val error = data?.getStringExtra(UAEPassWebViewActivity.RESULT_CODE_CANCELLED)
+                        ?: "Authentication Process Canceled By User"
+                    result.error("ERROR", error, null)
+                }
+                else -> {
+                    result.error("ERROR", "Unknown error occurred", null)
+                }
+            }
+            return true
+        }
+        return false
+    }
+
+    private fun buildAuthUrl(): String {
+        val acrValue = if (isPackageInstalled(activity!!.packageManager)) {
+            ACR_VALUES_MOBILE
+        } else {
+            ACR_VALUES_WEB
+        }
+
+        val baseUrl = when (environment) {
+            Environment.PRODUCTION -> "https://id.uaepass.ae/idshub/authorize"
+            else -> "https://stg-id.uaepass.ae/idshub/authorize"
+        }
+
+        return "$baseUrl?" +
+                "response_type=$RESPONSE_TYPE&" +
+                "client_id=$client_id&" +
+                "redirect_uri=$redirect_url&" +
+                "scope=$scope&" +
+                "state=$state&" +
+                "acr_values=$acrValue&" +
+                "ui_locales=${if (language == "ar") "ar" else "en"}"
     }
 }

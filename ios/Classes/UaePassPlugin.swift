@@ -119,14 +119,18 @@ public class UaePassPlugin: NSObject, FlutterPlugin {
                     self.flutterResult!(FlutterError(code: "ERROR", message:"Unable to get user token, Please try again.",details: nil)) 
                 }
                 return
-                 
             }
             webVC.onUAEPassFailureBlock = {(response: String?) -> Void in
                 UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: true)
                  self.flutterResult!(FlutterError(code: "ERROR", message:response,details: nil)) 
             }
             webVC.reloadwithURL(url: webVC.urlString)
-            UIApplication.shared.keyWindow?.rootViewController?.present(webVC, animated: true)
+            
+            // Wrap in navigation controller for full screen presentation with back button
+            let navigationController = UINavigationController(rootViewController: webVC)
+            navigationController.modalPresentationStyle = .fullScreen
+            
+            UIApplication.shared.keyWindow?.rootViewController?.present(navigationController, animated: true)
         }
 
 

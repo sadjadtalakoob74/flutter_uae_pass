@@ -24,10 +24,41 @@ import WebKit
     public var isSigning: Bool? = false
     public var skipDismiss = false
     public var alreadyCanceled = false
+    
     public override func viewDidLoad() {
+        super.viewDidLoad()
+        setupNavigationBar()
         self.title = "UAE PASS"
         contentMode.preferredContentMode = .mobile
         self.navigationController?.setNavigationBarHidden(false, animated: false)
+    }
+    
+    private func setupNavigationBar() {
+        // Add Back button with arrow icon to navigation bar
+        let backButton = UIBarButtonItem(
+            image: UIImage(systemName: "chevron.left"),
+            style: .plain,
+            target: self,
+            action: #selector(backButtonTapped)
+        )
+        backButton.title = "Back"
+        self.navigationItem.leftBarButtonItem = backButton
+        
+        // Remove the Done button since we only need back navigation for full screen
+        self.navigationItem.rightBarButtonItem = nil
+    }
+    
+    @objc private func backButtonTapped() {
+        dismissWithCancel()
+    }
+    
+    private func dismissWithCancel() {
+        if alreadyCanceled == false {
+            skipDismiss = true
+            alreadyCanceled = true
+            onUAEPassFailureBlock?("Authentication Process Canceled By User")
+        }
+        self.dismiss(animated: true)
     }
     
     let contentMode = WKWebpagePreferences.init()
@@ -159,7 +190,6 @@ extension UAEPassWebViewController: ConfigrationInstanceProtocol {
         return object
     }
 }
-
 
 public extension UIView {
     typealias ConstraintsTupleStretched = (top:NSLayoutConstraint, bottom:NSLayoutConstraint, leading:NSLayoutConstraint, trailing:NSLayoutConstraint)

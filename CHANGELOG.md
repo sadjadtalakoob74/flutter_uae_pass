@@ -27,3 +27,7 @@
 ## 1.0.3
 
 - resolve conflict with go_router custom schema integration
+
+## 1.0.4
+
+- fix IOS web view unable to navigate back
