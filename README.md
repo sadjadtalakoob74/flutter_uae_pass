@@ -4,6 +4,12 @@ Un-official UAE Pass Flutter plugin for **iOS, Android, and Web**.
 
 ![Demo](https://github.com/MohamedAbd0/flutter_uae_pass/blob/main/screenshots/demo.gif?raw=true)
 
+## Platform Screenshots
+
+| Android | iOS | Web |
+|---------|-----|-----|
+| ![Android](https://github.com/MohamedAbd0/flutter_uae_pass/blob/main/screenshots/andorid.png?raw=true) | ![iOS](https://github.com/MohamedAbd0/flutter_uae_pass/blob/main/screenshots/ios.png?raw=true) | ![Web](https://github.com/MohamedAbd0/flutter_uae_pass/blob/main/screenshots/web.png?raw=true) |
+
 ## Platform Support
 
 | Platform | Supported | Implementation                   |
