@@ -41,3 +41,10 @@
 - **NEW: Added web platform support with OAuth2 popup authentication flow**
 - Web implementation supports all core features: signIn, getAccessToken, getProfile, signOut
 - Cross-platform compatibility across iOS, Android, and Web
+
+## 1.0.6
+
+- **CRITICAL FIX: Resolved dart:html import error on mobile platforms**
+- Implemented conditional imports to prevent web-specific code from being compiled on mobile
+- Added platform-specific stub implementations for proper cross-platform compatibility
+- Fixed "Dart library 'dart:html' is not available on this platform" error when running on Android/iOS
