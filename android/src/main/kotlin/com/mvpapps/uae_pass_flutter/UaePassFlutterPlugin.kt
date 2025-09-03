@@ -224,17 +224,10 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         }
     }
 
-    private fun createSamplePdfFile(context: Context): File {
-        val tempFile = File(context.cacheDir, "sample_doc.pdf")
-        val sampleText = "This is a sample document for UAE Pass signing."
-        writeTextToPdf(tempFile, sampleText)
-        return tempFile
-    }
-
     private fun loadDocumentFromAssets(): File {
-        val f = File("$filesDir/dummy.pdf")
+        val f = File(activity!!.filesDir, "dummy.pdf")
         try {
-            val `is` = assets.open("dummy.pdf")
+            val `is` = activity!!.assets.open("dummy.pdf")
             val size = `is`.available()
             val buffer = ByteArray(size)
             `is`.read(buffer)
@@ -246,6 +239,13 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             throw RuntimeException(e)
         }
         return f
+    }
+
+    private fun createSamplePdfFile(context: Context): File {
+        val tempFile = File(context.cacheDir, "sample_doc.pdf")
+        val sampleText = "This is a sample document for UAE Pass signing."
+        writeTextToPdf(tempFile, sampleText)
+        return tempFile
     }
 
     private fun writeTextToPdf(file: File, text: String) {
