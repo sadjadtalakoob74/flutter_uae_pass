@@ -74,6 +74,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     private var activity: Activity? = null
     private lateinit var result: Result
     private var pendingResult: MethodChannel.Result? = null
+    private val TAG = "UAEPassPlugin"
 
     override fun onAttachedToActivity(@NonNull binding: ActivityPluginBinding) {
         if (activity == null)
@@ -190,33 +191,43 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 }
             }
             "sign_document" -> {
+                Log.d(TAG, "Method 'sign_document' called from Flutter.")
                 val file = loadDocumentFromAssets()
                 val finishCallbackUrl = call.argument<String>("finishCallbackUrl")
+                Log.d(TAG, "Document loaded from assets: ${file.path}")
 
                 if (finishCallbackUrl != null) {
+                    Log.d(TAG, "finishCallbackUrl is not null. Value: $finishCallbackUrl")
                     val documentSigningParams = loadDocumentSigningJson(finishCallbackUrl)
                     documentSigningParams?.let {
+                        Log.d(TAG, "Document signing parameters loaded successfully.")
                         val requestModel = UAEPassRequestModels.getDocumentRequestModel(file, it)
                         pendingResult = result
+                        Log.d(TAG, "Initiating UAEPassController.signDocument...")
                         UAEPassController.signDocument(activity!!, requestModel, object : UAEPassDocumentSigningCallback {
                             override fun getDocumentUrl(spId: String?, documentURL: String?, error: String?) {
                                 if (error != null) {
+                                    Log.e(TAG, "Document signing failed with error: $error")
                                     Toast.makeText(activity, "Error while signing document: $error", Toast.LENGTH_SHORT).show()
                                     pendingResult?.error("SIGNING_FAILED", error, null)
                                 } else if (documentURL != null) {
+                                    Log.i(TAG, "Document Signed Successfully. URL: $documentURL")
                                     Toast.makeText(activity, "Document Signed Successfully", Toast.LENGTH_SHORT).show()
                                     downloadDocument(file.name, documentURL)
                                     pendingResult?.success("Document signed successfully. URL: $documentURL")
                                 } else {
+                                    Log.w(TAG, "Document URL not received after successful signing.")
                                     pendingResult?.error("SIGNING_FAILED", "Document URL not received.", null)
                                 }
                                 pendingResult = null
                             }
                         })
                     } ?: run {
+                        Log.e(TAG, "Failed to load document signing parameters from JSON.")
                         result.error("INVALID_JSON", "Failed to load document signing parameters from JSON.", null)
                     }
                 } else {
+                    Log.e(TAG, "Missing finishCallbackUrl argument.")
                     result.error("INVALID_ARGUMENTS", "Missing finishCallbackUrl argument.", null)
                 }
             }
@@ -236,6 +247,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             fos.write(buffer)
             fos.close()
         } catch (e: Exception) {
+            Log.e(TAG, "Error loading document from assets", e)
             throw RuntimeException(e)
         }
         return f
@@ -274,7 +286,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 }
             }
         } catch (ex: IOException) {
-            ex.printStackTrace()
+            Log.e(TAG, "Error loading document signing JSON", ex)
             null
         }
     }
