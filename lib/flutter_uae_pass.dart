@@ -1,7 +1,11 @@
 import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/services.dart';
 import 'core/uae_pass_platform_interface.dart';
 import 'model/profile_data.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
 export 'core/export.dart';
 export 'model/export.dart';
 
@@ -75,6 +79,40 @@ class UaePass {
   Future<void> signOut() async {
     try {
       return await UaePassPlatform.instance.signOut();
+    } on PlatformException catch (e) {
+      throw (e.message ?? "Unknown error");
+    } catch (e) {
+      throw (e.toString());
+    }
+  }
+
+  // New: Public method to start the document signing process
+  Future<String?> signDocument({
+    required String textToSign,
+    required String finishCallbackUrl,
+  }) async {
+    try {
+      // 1. Create a PDF document from the provided text
+      final pdf = pw.Document();
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (pw.Context context) {
+            return pw.Center(
+              child: pw.Text(textToSign),
+            );
+          },
+        ),
+      );
+
+      // 2. Convert the PDF document to bytes
+      final documentBytes = await pdf.save();
+
+      // 3. Pass these bytes to the native platform for signing
+      return await UaePassPlatform.instance.signDocument(
+        documentBytes: documentBytes,
+        finishCallbackUrl: finishCallbackUrl,
+      );
     } on PlatformException catch (e) {
       throw (e.message ?? "Unknown error");
     } catch (e) {

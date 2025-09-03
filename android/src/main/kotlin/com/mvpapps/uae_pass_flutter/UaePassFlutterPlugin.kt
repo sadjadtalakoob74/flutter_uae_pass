@@ -5,16 +5,24 @@ import ae.sdg.libraryuaepass.UAEPassController.getAccessToken
 import ae.sdg.libraryuaepass.UAEPassController.getAccessCode
 import ae.sdg.libraryuaepass.UAEPassController.resume
 import ae.sdg.libraryuaepass.UAEPassController.getUserProfile
+import ae.sdg.libraryuaepass.UAEPassController.signDocument
 import ae.sdg.libraryuaepass.business.profile.model.ProfileModel
 import ae.sdg.libraryuaepass.business.authentication.model.UAEPassAccessTokenRequestModel
+import ae.sdg.libraryuaepass.business.documentsigning.model.DocumentSigningRequestParams
+import ae.sdg.libraryuaepass.business.documentsigning.model.UAEPassDocumentSigningRequestModel
 import ae.sdg.libraryuaepass.business.profile.model.UAEPassProfileRequestModel
-
+import ae.sdg.libraryuaepass.business.Environment
+import ae.sdg.libraryuaepass.business.Language
+import ae.sdg.libraryuaepass.utils.Utils.generateRandomString
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.util.Log
 import android.webkit.CookieManager
+import android.widget.Toast
 import androidx.annotation.NonNull
+import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -23,15 +31,17 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
-import ae.sdg.libraryuaepass.business.Environment
-import android.content.pm.PackageManager
-import ae.sdg.libraryuaepass.business.Language
-import ae.sdg.libraryuaepass.utils.Utils.generateRandomString
-import com.google.gson.Gson
-
-
-// create a class that implements the PluginRegistry.NewIntentListener interface
-
+import java.io.File
+import java.util.*
+import kotlin.io.path.createTempFile
+import kotlin.io.path.writeBytes
+import com.itextpdf.text.Document
+import com.itextpdf.text.Paragraph
+import com.itextpdf.text.pdf.PdfWriter
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
 
 /** UaePassPlugin */
 class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
@@ -63,7 +73,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
 
     private var activity: Activity? = null
     private lateinit var result: Result
-
+    private var pendingResult: MethodChannel.Result? = null
 
     override fun onAttachedToActivity(@NonNull binding: ActivityPluginBinding) {
         if (activity == null)
@@ -85,95 +95,176 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         activity = null
     }
 
-
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "uae_pass")
         channel.setMethodCallHandler(this)
-
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         this.result = result
-        if (call.method == "set_up_environment") {
-            CookieManager.getInstance().removeAllCookies { }
-            CookieManager.getInstance().flush()
-            client_id = call.argument<String>("client_id")
-            client_secret = call.argument<String>("client_secret")
-            redirect_url = call.argument<String?>("redirect_url")
-            environment =
-                if (call.argument<String>("environment") != null && call.argument<String>("environment") == "production") Environment.PRODUCTION else Environment.STAGING
-            state = call.argument<String?>("state")
-            scheme = call.argument<String>("scheme")
-            failureHost = call.argument<String?>("failureHost")
-            successHost = call.argument<String?>("successHost")
-            scope = call.argument<String?>("scope")
-            language = call.argument<String?>("language")
+        when (call.method) {
+            "set_up_environment" -> {
+                CookieManager.getInstance().removeAllCookies { }
+                CookieManager.getInstance().flush()
+                client_id = call.argument<String>("client_id")
+                client_secret = call.argument<String>("client_secret")
+                redirect_url = call.argument<String?>("redirect_url")
+                environment =
+                    if (call.argument<String>("environment") != null && call.argument<String>("environment") == "production") Environment.PRODUCTION else Environment.STAGING
+                state = call.argument<String?>("state")
+                scheme = call.argument<String>("scheme")
+                failureHost = call.argument<String?>("failureHost")
+                successHost = call.argument<String?>("successHost")
+                scope = call.argument<String?>("scope")
+                language = call.argument<String?>("language")
 
-            if (redirect_url == null) {
-                redirect_url = "https://oauthtest.com/authorization/return"
-            }
-            if (state == null) {
-                state = generateRandomString(24)
-            }
-
-            if (failureHost == null) {
-                failureHost = "failure"
-            }
-            if (successHost == null) {
-                successHost = "success"
-            }
-
-        } else if (call.method == "sign_out") {
-
-            CookieManager.getInstance().removeAllCookies { }
-            CookieManager.getInstance().flush()
-        } else if (call.method == "sign_in") {
-            /** Login with UAE Pass using custom full screen webview */
-            val authUrl = buildAuthUrl()
-            val intent = Intent(activity, UAEPassWebViewActivity::class.java).apply {
-                putExtra(UAEPassWebViewActivity.EXTRA_AUTH_URL, authUrl)
-                putExtra(UAEPassWebViewActivity.EXTRA_REDIRECT_URI, redirect_url)
-                putExtra(UAEPassWebViewActivity.EXTRA_SCHEME, scheme)
-            }
-
-            activity?.startActivityForResult(intent, 1001)
-        } else if (call.method == "access_token") {
-            requestModel = getAuthenticationRequestModel(activity!!)
-
-            getAccessToken(activity!!, requestModel, object : UAEPassAccessTokenCallback {
-                override fun getToken(accessToken: String?, state: String, error: String?) {
-                    if (error != null) {
-                        result.error("ERROR", error, null);
-                    } else {
-                        result.success(accessToken)
-                    }
+                if (redirect_url == null) {
+                    redirect_url = "https://oauthtest.com/authorization/return"
                 }
-            })
-        } else if (call.method == "profile") {
-            val requestModel = getProfileRequestModel(activity!!)
-
-            Log.d("TAG", "profile ${Gson().toJson(requestModel)}")
-            getUserProfile(activity!!, requestModel, object : UAEPassProfileCallback {
-                override fun getProfile(
-                    profileModel: ProfileModel?,
-                    state: String,
-                    error: String?
-                ) {
-                    Log.d("TAG", "error $error")
-                    if (error != null) {
-                        result.error("ERROR", error, null);
-                    } else {
-                        val gson = Gson()
-                        val profileJson = gson.toJson(profileModel)
-                        result.success(profileJson)
-                    }
+                if (state == null) {
+                    state = generateRandomString(24)
                 }
-            })
-        } else {
-            result.notImplemented()
+
+                if (failureHost == null) {
+                    failureHost = "failure"
+                }
+                if (successHost == null) {
+                    successHost = "success"
+                }
+                result.success(null)
+            }
+            "sign_out" -> {
+                CookieManager.getInstance().removeAllCookies { }
+                CookieManager.getInstance().flush()
+                result.success(null)
+            }
+            "sign_in" -> {
+                val authUrl = buildAuthUrl()
+                val intent = Intent(activity, UAEPassWebViewActivity::class.java).apply {
+                    putExtra(UAEPassWebViewActivity.EXTRA_AUTH_URL, authUrl)
+                    putExtra(UAEPassWebViewActivity.EXTRA_REDIRECT_URI, redirect_url)
+                    putExtra(UAEPassWebViewActivity.EXTRA_SCHEME, scheme)
+                }
+                activity?.startActivityForResult(intent, 1001)
+                pendingResult = result
+            }
+            "access_token" -> {
+                val code = call.argument<String>("code")
+                if (code != null) {
+                    requestModel = getAuthenticationRequestModel(activity!!)
+                    UAEPassController.getAccessToken(activity!!, requestModel, object : UAEPassAccessTokenCallback {
+                        override fun getToken(accessToken: String?, state: String, error: String?) {
+                            if (error != null) {
+                                result.error("ERROR", error, null);
+                            } else {
+                                result.success(accessToken)
+                            }
+                        }
+                    })
+                } else {
+                    result.error("ERROR", "Access code is null", null)
+                }
+            }
+            "profile" -> {
+                val accessToken = call.argument<String>("token")
+                if (accessToken != null) {
+                    val requestModel = getProfileRequestModel(activity!!)
+                    UAEPassController.getUserProfile(activity!!, requestModel, object : UAEPassProfileCallback {
+                        override fun getProfile(
+                            profileModel: ProfileModel?,
+                            state: String,
+                            error: String?
+                        ) {
+                            Log.d("TAG", "error $error")
+                            if (error != null) {
+                                result.error("ERROR", error, null);
+                            } else {
+                                val gson = Gson()
+                                val profileJson = gson.toJson(profileModel)
+                                result.success(profileJson)
+                            }
+                        }
+                    })
+                } else {
+                    result.error("ERROR", "Access token is null", null)
+                }
+            }
+            "sign_document" -> {
+                val file = createSamplePdfFile(activity!!)
+                val finishCallbackUrl = call.argument<String>("finishCallbackUrl")
+
+                if (finishCallbackUrl != null) {
+                    val documentSigningParams = loadDocumentSigningJson(finishCallbackUrl)
+                    documentSigningParams?.let {
+                        val requestModel = UAEPassRequestModels.getDocumentRequestModel(file, it)
+                        pendingResult = result
+                        UAEPassController.signDocument(activity!!, requestModel, object : UAEPassDocumentSigningCallback {
+                            override fun getDocumentUrl(spId: String?, documentURL: String?, error: String?) {
+                                if (error != null) {
+                                    Toast.makeText(activity, "Error while signing document: $error", Toast.LENGTH_SHORT).show()
+                                    pendingResult?.error("SIGNING_FAILED", error, null)
+                                } else if (documentURL != null) {
+                                    Toast.makeText(activity, "Document Signed Successfully", Toast.LENGTH_SHORT).show()
+                                    downloadDocument(file.name, documentURL)
+                                    pendingResult?.success("Document signed successfully. URL: $documentURL")
+                                } else {
+                                    pendingResult?.error("SIGNING_FAILED", "Document URL not received.", null)
+                                }
+                                pendingResult = null
+                            }
+                        })
+                    } ?: run {
+                        result.error("INVALID_JSON", "Failed to load document signing parameters from JSON.", null)
+                    }
+                } else {
+                    result.error("INVALID_ARGUMENTS", "Missing finishCallbackUrl argument.", null)
+                }
+            }
+            else -> result.notImplemented()
         }
     }
 
+    private fun createSamplePdfFile(context: Context): File {
+        val tempFile = File(context.cacheDir, "sample_doc.pdf")
+        val sampleText = "This is a sample document for UAE Pass signing."
+        writeTextToPdf(tempFile, sampleText)
+        return tempFile
+    }
+
+    private fun writeTextToPdf(file: File, text: String) {
+        val document = Document()
+        try {
+            PdfWriter.getInstance(document, FileOutputStream(file))
+            document.open()
+            document.add(Paragraph(text))
+        } catch (e: IOException) {
+            throw RuntimeException("Error creating PDF file", e)
+        } finally {
+            if (document.isOpen) {
+                document.close()
+            }
+        }
+    }
+
+    private fun loadDocumentSigningJson(finishCallbackUrl: String): DocumentSigningRequestParams? {
+        return try {
+            activity?.assets?.open("testSignData.json")?.use { inputStream ->
+                InputStreamReader(inputStream, StandardCharsets.UTF_8).use { reader ->
+                    val params = Gson().fromJson(reader, DocumentSigningRequestParams::class.java)
+                    // Set the finishCallbackUrl from the method argument
+                    params.finishCallbackUrl = finishCallbackUrl
+                    params
+                }
+            }
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+            null
+        }
+    }
+
+    private fun downloadDocument(fileName: String, documentUrl: String?) {
+        Toast.makeText(activity, "Download functionality not implemented", Toast.LENGTH_SHORT).show()
+    }
 
     override fun onNewIntent(intent: Intent): Boolean {
         handleIntent(intent)
@@ -183,7 +274,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     private fun handleIntent(intent: Intent?) {
         if (intent != null && intent.data != null) {
             if (scheme!! == intent.data!!.scheme) {
-                resume(intent.dataString)
+                UAEPassController.resume(intent.dataString)
             }
         }
     }
@@ -197,15 +288,12 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             is Environment.STAGING -> {
                 UAE_PASS_STG_PACKAGE_ID
             }
-
             is Environment.QA -> {
                 UAE_PASS_QA_PACKAGE_ID
             }
-
             is Environment.PRODUCTION -> {
                 UAE_PASS_PACKAGE_ID
             }
-
             else -> {
                 UAE_PASS_PACKAGE_ID
             }
@@ -219,7 +307,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         return found
     }
 
-    fun getAuthenticationRequestModel(context: Context): UAEPassAccessTokenRequestModel {
+    private fun getAuthenticationRequestModel(context: Context): UAEPassAccessTokenRequestModel {
         val ACR_VALUE = if (isPackageInstalled(context.packageManager)) {
             ACR_VALUES_MOBILE
         } else {
@@ -231,7 +319,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             Language.EN
         }
         return UAEPassAccessTokenRequestModel(
-            environment!!,
+            environment,
             client_id!!,
             client_secret!!,
             scheme!!,
@@ -246,7 +334,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         )
     }
 
-    fun getProfileRequestModel(context: Context): UAEPassProfileRequestModel {
+    private fun getProfileRequestModel(context: Context): UAEPassProfileRequestModel {
         val ACR_VALUE = if (isPackageInstalled(context.packageManager)) {
             ACR_VALUES_MOBILE
         } else {
@@ -258,7 +346,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             Language.EN
         }
         return UAEPassProfileRequestModel(
-            environment!!,
+            environment,
             client_id!!,
             client_secret!!,
             scheme!!,

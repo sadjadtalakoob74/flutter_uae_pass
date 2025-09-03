@@ -11,12 +11,12 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 
 class UAEPassWebViewActivity : Activity() {
-    
+
     private lateinit var webView: WebView
     private var authUrl: String? = null
     private var redirectUri: String? = null
     private var scheme: String? = null
-    
+
     companion object {
         const val EXTRA_AUTH_URL = "auth_url"
         const val EXTRA_REDIRECT_URI = "redirect_uri"
@@ -25,10 +25,10 @@ class UAEPassWebViewActivity : Activity() {
         const val RESULT_CODE_ERROR = "error_message"
         const val RESULT_CODE_CANCELLED = "cancelled"
     }
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // Set up action bar with back button only - no logo
         actionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
@@ -40,19 +40,19 @@ class UAEPassWebViewActivity : Activity() {
             title = "UAE PASS"
             setHomeButtonEnabled(true)
         }
-        
+
         // Get data from intent
         authUrl = intent.getStringExtra(EXTRA_AUTH_URL)
         redirectUri = intent.getStringExtra(EXTRA_REDIRECT_URI)
         scheme = intent.getStringExtra(EXTRA_SCHEME)
-        
+
         // Set up WebView
         setupWebView()
-        
+
         // Load the authentication URL
         authUrl?.let { webView.loadUrl(it) }
     }
-    
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
@@ -66,7 +66,7 @@ class UAEPassWebViewActivity : Activity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
-    
+
     override fun onBackPressed() {
         if (webView.canGoBack()) {
             webView.goBack()
@@ -78,11 +78,11 @@ class UAEPassWebViewActivity : Activity() {
             super.onBackPressed()
         }
     }
-    
+
     private fun setupWebView() {
         webView = WebView(this)
         setContentView(webView)
-        
+
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
@@ -92,29 +92,29 @@ class UAEPassWebViewActivity : Activity() {
             builtInZoomControls = true
             displayZoomControls = false
         }
-        
+
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 url?.let { checkUrlForRedirect(it) }
             }
-            
+
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                url?.let { 
+                url?.let {
                     if (checkUrlForRedirect(it)) {
                         return true
                     }
                 }
                 return false
             }
-            
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 url?.let { checkUrlForRedirect(it) }
             }
         }
     }
-    
+
     private fun checkUrlForRedirect(url: String): Boolean {
         // Check for success redirect
         if (url.contains(redirectUri ?: "") && url.contains("code=")) {
@@ -128,7 +128,7 @@ class UAEPassWebViewActivity : Activity() {
                 return true
             }
         }
-        
+
         // Check for error or cancellation
         if (url.contains("error=access_denied") || url.contains("error=cancelled")) {
             setResult(RESULT_CANCELED, Intent().apply {
@@ -137,7 +137,7 @@ class UAEPassWebViewActivity : Activity() {
             finish()
             return true
         }
-        
+
         // Check for custom scheme (UAE Pass app launch)
         if (url.startsWith("uaepass://")) {
             try {
@@ -148,7 +148,15 @@ class UAEPassWebViewActivity : Activity() {
             }
             return true
         }
-        
+
         return false
+    }
+
+    fun forceReload() {
+        webView.reload()
+    }
+
+    fun foreceStop() {
+        webView.stopLoading()
     }
 }

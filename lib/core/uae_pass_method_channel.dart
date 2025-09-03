@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -62,5 +64,23 @@ class MethodChannelUaePass extends UaePassPlatform {
   @override
   Future<void> signOut() async {
     await methodChannel.invokeMethod<void>('sign_out');
+  }
+
+  // New: Implementation for document signing
+  @override
+  Future<String?> signDocument({
+    required Uint8List documentBytes,
+    required String finishCallbackUrl,
+  }) async {
+    try {
+      final String? result = await methodChannel.invokeMethod('sign_document', {
+        'documentBytes': documentBytes,
+        'finishCallbackUrl': finishCallbackUrl,
+      });
+      return result;
+    } on PlatformException catch (e) {
+      debugPrint("Failed to sign document: '${e.message}'.");
+      return null;
+    }
   }
 }

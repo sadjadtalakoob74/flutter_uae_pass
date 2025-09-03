@@ -13,7 +13,7 @@ import android.content.pm.PackageManager
 import java.io.File
 import java.util.*
 
- 
+
 object UAEPassRequestModels {
 
     private const val UAE_PASS_CLIENT_ID = "sandbox_stage"
@@ -31,7 +31,7 @@ object UAEPassRequestModels {
     private const val FAILURE_HOST = "failure"
     private const val SUCCESS_HOST = "success"
     private val STATE = generateRandomString(24)
-     val UAE_PASS_ENVIRONMENT: Environment = Environment.STAGING
+    val UAE_PASS_ENVIRONMENT: Environment = Environment.STAGING
 
     private fun isPackageInstalled(packageManager: PackageManager): Boolean {
         val packageName = when (UAE_PASS_ENVIRONMENT) {
@@ -63,6 +63,7 @@ object UAEPassRequestModels {
         } else {
             ACR_VALUES_WEB
         }
+        val language = Language.EN // Assuming default English, or retrieve from context
         return UAEPassAccessTokenRequestModel(
             UAE_PASS_ENVIRONMENT,
             UAE_PASS_CLIENT_ID,
@@ -75,8 +76,7 @@ object UAEPassRequestModels {
             RESPONSE_TYPE,
             ACR_VALUE,
             STATE,
-                Language.EN,
-
+            language
         )
     }
 
@@ -118,6 +118,7 @@ object UAEPassRequestModels {
         } else {
             ACR_VALUES_WEB
         }
+        val language = Language.EN // Assuming default English, or retrieve from context
         return UAEPassProfileRequestModel(
             UAE_PASS_ENVIRONMENT,
             UAE_PASS_CLIENT_ID,
@@ -130,7 +131,7 @@ object UAEPassRequestModels {
             RESPONSE_TYPE,
             ACR_VALUE,
             STATE,
-            Language.EN
+            language
         )
     }
 }

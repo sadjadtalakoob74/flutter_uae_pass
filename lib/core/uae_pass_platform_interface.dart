@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'uae_pass_method_channel.dart';
 
@@ -49,5 +51,13 @@ abstract class UaePassPlatform extends PlatformInterface {
 
   Future<void> signOut() {
     throw UnimplementedError('signOut() has not been implemented.');
+  }
+
+  // New: Abstract method for document signing
+  Future<String?> signDocument({
+    required Uint8List documentBytes,
+    required String finishCallbackUrl,
+  }) {
+    throw UnimplementedError('signDocument() has not been implemented.');
   }
 }

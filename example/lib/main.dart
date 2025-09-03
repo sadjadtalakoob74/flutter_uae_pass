@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_uae_pass/flutter_uae_pass.dart';
+import 'package:flutter_uae_pass/model/profile_data.dart';
 
 void main() {
   runApp(const MyApp());
@@ -43,6 +45,14 @@ class _MyAppState extends State<MyApp> {
                 onPressed: () => login(),
                 child: const Text('Sign in with UAE Pass'),
               ),
+              const SizedBox(height: 20),
+              if (profileData != null)
+                MaterialButton(
+                  onPressed: () => signDocument(),
+                  color: Colors.green,
+                  textColor: Colors.white,
+                  child: const Text('Sign Document'),
+                ),
               const SizedBox(height: 100),
               if (authCode != null)
                 ListTile(
@@ -92,16 +102,85 @@ class _MyAppState extends State<MyApp> {
     profileData = null;
     setState(() {});
     try {
+      if (kDebugMode) {
+        print("Starting login process...");
+      }
       authCode = await _uaePass.signIn();
+      if (kDebugMode) {
+        print("Auth code received: $authCode");
+      }
       accessToken = await _uaePass.getAccessToken(authCode ?? "");
+      if (kDebugMode) {
+        print("Access token received: $accessToken");
+      }
       profileData = await _uaePass.getProfile(accessToken ?? "");
-
+      if (kDebugMode) {
+        print("Profile data received for: ${profileData?.fullnameEN}");
+      }
       setState(() {});
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print("PlatformException during login: ${e.message}");
+      }
     } catch (e) {
       if (kDebugMode) {
-        print(e.toString());
+        print("Unknown error during login: $e");
       }
     }
     setState(() {});
+  }
+
+  Future<void> signDocument() async {
+    try {
+      if (kDebugMode) {
+        print("Starting document signing process...");
+      }
+      const textToSign = "This document is digitally signed by the user via UAE Pass.";
+      final result = await _uaePass.signDocument(
+        textToSign: textToSign,
+        finishCallbackUrl: 'yourapp://signsuccess',
+      );
+      if (result != null) {
+        if (kDebugMode) {
+          print("Document signing result: $result");
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        if (kDebugMode) {
+          print("Document signing failed or was canceled.");
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Signing failed or was canceled."),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print("PlatformException during document signing: ${e.message}");
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error during signing: ${e.message}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print("Unknown error during document signing: $e");
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error during signing: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
