@@ -190,7 +190,7 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 }
             }
             "sign_document" -> {
-                val file = createSamplePdfFile(activity!!)
+                val file = loadDocumentFromAssets()
                 val finishCallbackUrl = call.argument<String>("finishCallbackUrl")
 
                 if (finishCallbackUrl != null) {
@@ -229,6 +229,23 @@ class UaePassFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         val sampleText = "This is a sample document for UAE Pass signing."
         writeTextToPdf(tempFile, sampleText)
         return tempFile
+    }
+
+    private fun loadDocumentFromAssets(): File {
+        val f = File("$filesDir/dummy.pdf")
+        try {
+            val `is` = assets.open("dummy.pdf")
+            val size = `is`.available()
+            val buffer = ByteArray(size)
+            `is`.read(buffer)
+            `is`.close()
+            val fos = FileOutputStream(f)
+            fos.write(buffer)
+            fos.close()
+        } catch (e: Exception) {
+            throw RuntimeException(e)
+        }
+        return f
     }
 
     private fun writeTextToPdf(file: File, text: String) {
